@@ -317,9 +317,15 @@ class DenseLayer(nn.Sequential):
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
+        inter_channels = 4 * growth_rate
+
         conv_block += [norm_layer(dim),
                        nn.ReLU(True),
-                       nn.Conv2d(dim, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
+                       nn.Conv2d(dim, inter_channels, kernel_size=1, bias=use_bias)]
+
+        conv_block += [norm_layer(inter_channels),
+                       nn.ReLU(True),
+                       nn.Conv2d(inter_channels, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
 
         return nn.Sequential(*conv_block)
 

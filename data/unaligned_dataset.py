@@ -3,6 +3,7 @@ from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
 import random
+from IPython import embed
 
 
 class UnalignedDataset(BaseDataset):
@@ -34,6 +35,7 @@ class UnalignedDataset(BaseDataset):
 
         A = self.transform(A_img)
         B = self.transform(B_img)
+
         if self.opt.which_direction == 'BtoA':
             input_nc = self.opt.output_nc
             output_nc = self.opt.input_nc

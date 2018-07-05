@@ -24,7 +24,13 @@ class BaseModel():
     def set_input(self, input):
         self.input = input
 
+    def set_input_real_A(self, input_real_A):
+        pass
+
     def forward(self):
+        pass
+
+    def fake_B(self):
         pass
 
     # load and print networks; create shedulars
@@ -48,6 +54,10 @@ class BaseModel():
     def test(self):
         with torch.no_grad():
             self.forward()
+
+    def test_fake_B(self):
+        with torch.no_grad():
+            self.fake_B()
 
     # get image paths
     def get_image_paths(self):
