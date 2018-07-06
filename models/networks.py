@@ -78,13 +78,13 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'resnet_6blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
     elif which_model_netG == 'densenet_5blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=5)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=5)
     elif which_model_netG == 'densenet_6blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=6)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
     elif which_model_netG == 'densenet_7blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=7)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=7)
     elif which_model_netG == 'densenet_8blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=8)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=8)
     elif which_model_netG == 'unet_128':
         netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif which_model_netG == 'unet_256':
@@ -294,18 +294,18 @@ class DensenetBlock(nn.Sequential):
     def __init__(self, dim, growth_rate, padding_type, norm_layer, use_dropout, use_bias, n_blocks):
         super(DensenetBlock, self).__init__()
         for i in range(n_blocks - 1):
-            self.add_module('dense_layer %d' % (i+1), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, concat=True))
+            self.add_module('dense_layer %d' % (i+1), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=True))
             dim = dim + growth_rate
-        self.add_module('dense_layer %d' % (n_blocks), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, concat=False))
+        self.add_module('dense_layer %d' % (n_blocks), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=False))
 
 
 class DenseLayer(nn.Sequential):
-    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_bias, concat=True):
+    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=True):
         super(DenseLayer, self).__init__()
-        self.add_module('conv', self.build_conv_block(dim, growth_rate, padding_type, norm_layer, use_bias))
+        self.add_module('conv', self.build_conv_block(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout))
         self.concat = concat
 
-    def build_conv_block(self, dim, growth_rate, padding_type, norm_layer, use_bias):
+    def build_conv_block(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout):
         conv_block = []
         p = 0
         if padding_type == 'reflect':
@@ -330,6 +330,9 @@ class DenseLayer(nn.Sequential):
         conv_block += [norm_layer(dim),
                        nn.ReLU(True),
                        nn.Conv2d(dim, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
+
+        if use_dropout:
+            conv_block += [nn.Dropout(0.5)]
 
         return nn.Sequential(*conv_block)
 
