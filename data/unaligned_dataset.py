@@ -3,7 +3,6 @@ from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
 import random
-from IPython import embed
 
 
 class UnalignedDataset(BaseDataset):
@@ -50,6 +49,7 @@ class UnalignedDataset(BaseDataset):
         if output_nc == 1:  # RGB to gray
             tmp = B[0, ...] * 0.299 + B[1, ...] * 0.587 + B[2, ...] * 0.114
             B = tmp.unsqueeze(0)
+
         return {'A': A, 'B': B,
                 'A_paths': A_path, 'B_paths': B_path}
 

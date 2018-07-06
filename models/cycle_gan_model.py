@@ -77,7 +77,7 @@ class CycleGANModel(BaseModel):
         self.fake_A = self.netG_B(self.real_B)
         self.rec_B = self.netG_A(self.fake_A)
 
-    def fake_B(self):
+    def create_fake_B(self):
         self.fake_B = self.netG_A(self.real_A)
 
     def backward_D_basic(self, netD, real, fake):

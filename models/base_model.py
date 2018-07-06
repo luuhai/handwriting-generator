@@ -30,7 +30,7 @@ class BaseModel():
     def forward(self):
         pass
 
-    def fake_B(self):
+    def create_fake_B(self):
         pass
 
     # load and print networks; create shedulars
@@ -57,7 +57,7 @@ class BaseModel():
 
     def test_fake_B(self):
         with torch.no_grad():
-            self.fake_B()
+            self.create_fake_B()
 
     # get image paths
     def get_image_paths(self):
