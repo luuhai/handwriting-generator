@@ -239,8 +239,6 @@ class ResnetBlock(nn.Module):
 
 # Defines the generator that consists of Densenet blocks between a few
 # downsampling/upsampling operations.
-# Code and idea originally from Justin Johnson's architecture.
-# https://github.com/jcjohnson/fast-neural-style/
 class DensenetGenerator(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=5, padding_type='reflect'):
         assert(n_blocks >= 0)
