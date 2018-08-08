@@ -78,13 +78,13 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'resnet_6blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
     elif which_model_netG == 'densenet_5blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=5)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck=use_bottleneck, n_blocks=5)
     elif which_model_netG == 'densenet_6blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=6)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck=use_bottleneck, n_blocks=6)
     elif which_model_netG == 'densenet_7blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=7)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck=use_bottleneck, n_blocks=7)
     elif which_model_netG == 'densenet_8blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=8)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck=use_bottleneck, n_blocks=8)
     elif which_model_netG == 'unet_128':
         netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif which_model_netG == 'unet_256':
