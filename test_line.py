@@ -51,7 +51,6 @@ def gen_line(text, opt):
             img = img.reshape([1, img.shape[0], img.shape[1], img.shape[2]])
             inputs.append(img)
 
-            print(img.shape)
             model.set_input_real_A(img)
             model.test_fake_B()
             results.append(model.fake_B)
