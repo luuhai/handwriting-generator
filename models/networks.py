@@ -300,10 +300,10 @@ class DensenetBlock(nn.Sequential):
 class DenseLayer(nn.Sequential):
     def __init__(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck, concat=True):
         super(DenseLayer, self).__init__()
-        self.add_module('conv', self.build_conv_block(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout))
+        self.add_module('conv', self.build_conv_block(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck))
         self.concat = concat
 
-    def build_conv_block(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout):
+    def build_conv_block(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck):
         conv_block = []
         p = 0
         if padding_type == 'reflect':
