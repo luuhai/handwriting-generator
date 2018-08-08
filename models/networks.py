@@ -69,7 +69,7 @@ def init_net(net, init_type='normal', gpu_ids=[]):
     return net
 
 
-def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, init_type='normal', gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, use_bottleneck=False, init_type='normal', gpu_ids=[]):
     netG = None
     norm_layer = get_norm_layer(norm_type=norm)
 
@@ -78,13 +78,13 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'resnet_6blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
     elif which_model_netG == 'densenet_5blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=5)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=5)
     elif which_model_netG == 'densenet_6blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=6)
     elif which_model_netG == 'densenet_7blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=7)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=7)
     elif which_model_netG == 'densenet_8blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=8)
+        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, use_bottleneck, n_blocks=8)
     elif which_model_netG == 'unet_128':
         netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif which_model_netG == 'unet_256':
@@ -240,7 +240,7 @@ class ResnetBlock(nn.Module):
 # Defines the generator that consists of Densenet blocks between a few
 # downsampling/upsampling operations.
 class DensenetGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=5, padding_type='reflect'):
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, use_bottleneck=False, n_blocks=5, padding_type='reflect'):
         assert(n_blocks >= 0)
         super(DensenetGenerator, self).__init__()
         self.input_nc = input_nc
@@ -267,7 +267,7 @@ class DensenetGenerator(nn.Module):
 
         mult = 2**n_downsampling
         model += [DensenetBlock(ngf * mult, ngf * mult, padding_type=padding_type, norm_layer=norm_layer,
-                                use_dropout=use_dropout, use_bias=use_bias, n_blocks=n_blocks)]
+                                use_dropout=use_dropout, use_bottleneck=use_bottleneck, use_bias=use_bias, n_blocks=n_blocks)]
 
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
@@ -289,16 +289,16 @@ class DensenetGenerator(nn.Module):
 
 # Define a densenet block
 class DensenetBlock(nn.Sequential):
-    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_dropout, use_bias, n_blocks):
+    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_dropout, use_bottleneck, use_bias, n_blocks):
         super(DensenetBlock, self).__init__()
         for i in range(n_blocks - 1):
-            self.add_module('dense_layer %d' % (i+1), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=True))
+            self.add_module('dense_layer %d' % (i+1), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck, concat=True))
             dim = dim + growth_rate
-        self.add_module('dense_layer %d' % (n_blocks), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=False))
+        self.add_module('dense_layer %d' % (n_blocks), DenseLayer(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck, concat=False))
 
 
 class DenseLayer(nn.Sequential):
-    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, concat=True):
+    def __init__(self, dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout, use_bottleneck, concat=True):
         super(DenseLayer, self).__init__()
         self.add_module('conv', self.build_conv_block(dim, growth_rate, padding_type, norm_layer, use_bias, use_dropout))
         self.concat = concat
@@ -315,19 +315,20 @@ class DenseLayer(nn.Sequential):
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
-        inter_channels = 2 * growth_rate
+        if use_bottleneck:
+            inter_channels = 2 * growth_rate
 
-        conv_block += [norm_layer(dim),
-                       nn.ReLU(True),
-                       nn.Conv2d(dim, inter_channels, kernel_size=1, bias=use_bias)]
+            conv_block += [norm_layer(dim),
+                           nn.ReLU(True),
+                           nn.Conv2d(dim, inter_channels, kernel_size=1, bias=use_bias)]
 
-        conv_block += [norm_layer(inter_channels),
-                       nn.ReLU(True),
-                       nn.Conv2d(inter_channels, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
-
-        #conv_block += [norm_layer(dim),
-        #               nn.ReLU(True),
-        #               nn.Conv2d(dim, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
+            conv_block += [norm_layer(inter_channels),
+                           nn.ReLU(True),
+                           nn.Conv2d(inter_channels, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
+        else:
+            conv_block += [norm_layer(dim),
+                           nn.ReLU(True),
+                           nn.Conv2d(dim, growth_rate, kernel_size=3, padding=p, bias=use_bias)]
 
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
