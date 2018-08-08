@@ -33,19 +33,15 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256):
     webpage.add_images(ims, txts, links, width=width)
 
 
-def save_image(webpage, image, aspect_ratio=1.0, width=256):
-    image_dir = webpage.get_image_dir()
-
+def save_image(result_dir, image, image_name, aspect_ratio=1.0):
     im = util.tensor2im(image)
-    image_name = 'result.png'
-    save_path = os.path.join(image_dir, image_name)
+    save_path = os.path.join(result_dir, image_name)
     h, w, _ = im.shape
     if aspect_ratio > 1.0:
         im = imresize(im, (h, int(w * aspect_ratio)), interp='bicubic')
     if aspect_ratio < 1.0:
         im = imresize(im, (int(h / aspect_ratio), w), interp='bicubic')
     util.save_image(im, save_path)
-
 
 
 class Visualizer():

@@ -1,7 +1,7 @@
 import os
 import torch
 
-from options.test_options import TestOptions
+from options.test_line_options import TestLineOptions
 from data import CreateDataLoader
 from data.base_dataset import get_transform
 from models import create_model
@@ -17,60 +17,59 @@ def draw_single_char(ch, font, canvas_size=128, x_offset=26, y_offset=36):
     return img.convert('RGB')
 
 
-if __name__ == '__main__':
-    address = '〒100-8994 東京都中央区八重洲1-5-3'
-    font = ImageFont.truetype("TakaoGothic.ttf", size=68)
-    results = []
+def gen_line(text, opt):
+    result_img_names = []
 
-    opt = TestOptions().parse()
     opt.nThreads = 1   # test code only supports nThreads = 1
     opt.batchSize = 1  # test code only supports batchSize = 1
     opt.serial_batches = True  # no shuffle
     opt.no_flip = True  # no flip
     opt.display_id = -1  # no visdom display
 
-    model = create_model(opt)
-    model.setup(opt)
-    for ch in address:
-        img = draw_single_char(ch, font)
+    font = ImageFont.truetype(opt.font, size=opt.font_size)
 
-        transform = get_transform(opt)
+    epochs = opt.which_epoch.split(',')
+    for epoch in epochs:
+        results = []
+        inputs = []
+        opt.which_epoch = epoch
+        model = create_model(opt)
+        model.setup(opt)
 
-        # create website
-        web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.which_epoch))
-        webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.which_epoch))
+        for ch in text:
+            img = draw_single_char(ch, font, x_offset=opt.offset, y_offset=opt.offset)
 
-        img = transform(img)
+            transform = get_transform(opt)
 
-        if opt.which_direction == 'BtoA':
-            input_nc = opt.output_nc
-            output_nc = opt.input_nc
-        else:
-            input_nc = opt.input_nc
-            output_nc = opt.output_nc
+            img = transform(img)
 
-        if input_nc == 1:  # RGB to gray
-            tmp = img[0, ...] * 0.299 + img[1, ...] * 0.587 + img[2, ...] * 0.114
-            img = tmp.unsqueeze(0)
+            if opt.input_nc == 1:  # RGB to gray
+                tmp = img[0, ...] * 0.299 + img[1, ...] * 0.587 + img[2, ...] * 0.114
+                img = tmp.unsqueeze(0)
 
 
-        model.set_input_real_A(img.reshape([1, img.shape[0], img.shape[1], img.shape[2]]))
-        model.test_fake_B()
-        results.append(model.fake_B)
+            img = img.reshape([1, img.shape[0], img.shape[1], img.shape[2]])
+            inputs.append(img)
 
-    result = reduce((lambda x, y: torch.cat((x, y), -1)), results)
+            print(img.shape)
+            model.set_input_real_A(img)
+            model.test_fake_B()
+            results.append(model.fake_B)
 
-    save_image(webpage, result, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
-    # test
-    #for i, data in enumerate(dataset):
-    #    if i >= opt.how_many:
-    #        break
-    #    model.set_input(data)
-    #    model.test()
-    #    visuals = model.get_current_visuals()
-    #    img_path = model.get_image_paths()
-    #    if i % 5 == 0:
-    #        print('processing (%04d)-th image... %s' % (i, img_path))
-    #    save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
+        result = reduce((lambda x, y: torch.cat((x, y), -1)), results)
+        input_img = reduce((lambda x, y: torch.cat((x, y), -1)), inputs)
 
-    #webpage.save()
+        result_img_name = 'result_' + opt.name + '_' + str(epoch) +  '.png'
+        input_img_name = 'input_' + opt.name + '.png'
+        result_img_names.append(result_img_name)
+
+        save_image(opt.results_dir, result, result_img_name, aspect_ratio=opt.aspect_ratio)
+        save_image(opt.results_dir, input_img, input_img_name, aspect_ratio=opt.aspect_ratio)
+
+    return {'input': input_img_name, 'result': result_img_names}
+
+if __name__ == '__main__':
+    text = input("Input text: ")
+
+    opt = TestLineOptions().parse()
+    gen_line(text, opt)
