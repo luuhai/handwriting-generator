@@ -58,8 +58,8 @@ def gen_line(text, opt):
         result = reduce((lambda x, y: torch.cat((x, y), -1)), results)
         input_img = reduce((lambda x, y: torch.cat((x, y), -1)), inputs)
 
-        result_img_name = 'result_' + opt.name + '_' + str(epoch) +  '.png'
-        input_img_name = 'input_' + opt.name + '.png'
+        result_img_name = 'result_' + opt.name + '_' + str(epoch) + '_' + text +  '.png'
+        input_img_name = 'input_' + opt.name + '_' + text + '.png'
         result_img_names.append(result_img_name)
 
         save_image(opt.results_dir, result, result_img_name, aspect_ratio=opt.aspect_ratio)
