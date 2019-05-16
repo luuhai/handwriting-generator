@@ -146,22 +146,22 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     net = None
     norm_layer = get_norm_layer(norm_type=norm)
 
-    if which_model_netG == 'resnet_9blocks':
-        netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9)
-    elif which_model_netG == 'resnet_6blocks':
-        netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
-    elif which_model_netG == 'densenet_5blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=5)
-    elif which_model_netG == 'densenet_6blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=6)
-    elif which_model_netG == 'densenet_7blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=7)
-    elif which_model_netG == 'densenet_8blocks':
-        netG = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=8)
-    elif which_model_netG == 'unet_128':
-        netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
-    elif which_model_netG == 'unet_256':
-        netG = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+    if netG == 'resnet_9blocks':
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9)
+    elif netG == 'resnet_6blocks':
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
+    elif netG == 'densenet_5blocks':
+        net = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=5)
+    elif netG == 'densenet_6blocks':
+        net = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=6)
+    elif netG == 'densenet_7blocks':
+        net = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=7)
+    elif netG == 'densenet_8blocks':
+        net = DensenetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, n_blocks=8)
+    elif netG == 'unet_128':
+        net = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+    elif netG == 'unet_256':
+        net = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain, gpu_ids)
